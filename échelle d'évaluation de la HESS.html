@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piste de Score - Soins Palliatifs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        .score-display {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .score-number {
+            font-size: 5rem;
+            font-weight: bold;
+            color: #667eea;
+            line-height: 1;
+        }
+
+        .score-label {
+            font-size: 1.2rem;
+            color: #4a5568;
+            margin-top: 10px;
+        }
+
+        .level-badge {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-top: 15px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-minus-2 { background: #e53e3e; }
+        .btn-minus-1 { background: #fc8181; }
+        .btn-plus-1 { background: #48bb78; }
+        .btn-plus-2 { background: #38a169; }
+        .btn-reset { background: #4a5568; }
+
+        .track-container {
+            position: relative;
+            margin-top: 30px;
+        }
+
+        .track {
+            display: flex;
+            justify-content: space-between;
+            background: #f7fafc;
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .track-line {
+            position: absolute;
+            top: 50%;
+            left: 20px;
+            right: 20px;
+            height: 8px;
+            background: linear-gradient(to right, #e53e3e 0%, #ed8936 25%, #ecc94b 40%, #48bb78 60%, #38b2ac 80%, #805ad5 100%);
+            border-radius: 4px;
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+
+        .score-point {
+            position: relative;
+            z-index: 2;
+            width: 50px;
+            text-align: center;
+        }
+
+        .score-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #cbd5e0;
+            margin: 0 auto 5px;
+            transition: all 0.3s ease;
+        }
+
+        .score-dot.active {
+            width: 35px;
+            height: 35px;
+            background: #667eea;
+            border: 5px solid #764ba2;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .score-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .level-card {
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 5px solid;
+            background: #f7fafc;
+            transition: all 0.3s ease;
+        }
+
+        .level-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .level-card.active {
+            background: #edf2f7;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+        }
+
+        .level-range {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .level-name {
+            font-size: 0.95rem;
+            color: #2d3748;
+        }
+
+        /* Couleurs par palier */
+        .level-0 { border-color: #e53e3e; }
+        .level-1 { border-color: #ed8936; }
+        .level-2 { border-color: #ecc94b; }
+        .level-3 { border-color: #ecc94b; }
+        .level-4 { border-color: #48bb78; }
+        .level-5 { border-color: #48bb78; }
+        .level-6 { border-color: #38b2ac; }
+        .level-7 { border-color: #38b2ac; }
+        .level-8 { border-color: #4299e1; }
+        .level-9 { border-color: #667eea; }
+        .level-10 { border-color: #805ad5; }
+
+        .badge-0 { background: #e53e3e; }
+        .badge-1 { background: #ed8936; }
+        .badge-2 { background: #ecc94b; }
+        .badge-3 { background: #ecc94b; }
+        .badge-4 { background: #48bb78; }
+        .badge-5 { background: #48bb78; }
+        .badge-6 { background: #38b2ac; }
+        .badge-7 { background: #38b2ac; }
+        .badge-8 { background: #4299e1; }
+        .badge-9 { background: #667eea; }
+        .badge-10 { background: #805ad5; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 Échelle d'évaluation de la HESS</h1>
+        <p class="subtitle">L'équipe de la mort qui tue - Unité de Soins Palliatifs</p>
+
+        <div class="score-display">
+            <div class="score-number" id="scoreDisplay">0</div>
+            <div class="score-label">Points d'accompagnement</div>
+            <div class="level-badge" id="levelBadge">Fermeture de l'unité</div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-minus-2" onclick="changeScore(-2)">-2</button>
+            <button class="btn-minus-1" onclick="changeScore(-1)">-1</button>
+            <button class="btn-reset" onclick="resetScore()">Réinitialiser</button>
+            <button class="btn-plus-1" onclick="changeScore(1)">+1</button>
+            <button class="btn-plus-2" onclick="changeScore(2)">+2</button>
+        </div>
+
+        <div class="track-container">
+            <div class="track">
+                <div class="track-line"></div>
+                <div class="score-point">
+                    <div class="score-dot active" id="dot-0"></div>
+                    <div class="score-value">0</div>
+                </div>
+                <div class="score-point">
+                    <div class="score-dot" id="dot-5"></div>
+                    <div class="score-value">5</div>
+                </div>
+                <div class="score-point">
+                    <div class="score-dot" id="dot-10"></div>
+                    <div class="score-value">10</div>
+                </div>
+                <div class="score-point">
+                    <div class="score-dot" id="dot-15"></div>
+                    <div class="score-value">15</div>
+                </div>
+                <div class="score-point">
+                    <div class="score-dot" id="dot-20"></div>
+                    <div class="score-value">20</div>
+                </div>
+                <div class="score-point">
+                    <div class="score-dot" id="dot-25"></div>
+                    <div class="score-value">25</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="levels-grid">
+            <div class="level-card level-0 active" id="card-0">
+                <div class="level-range">0 - 3</div>
+                <div class="level-name">❌ Fermeture de l'unité</div>
+            </div>
+            <div class="level-card level-1" id="card-1">
+                <div class="level-range">4 - 6</div>
+                <div class="level-name">🔍 Mise sous surveillance</div>
+            </div>
+            <div class="level-card level-2" id="card-2">
+                <div class="level-range">7 - 8</div>
+                <div class="level-name">⚠️ Vigilance</div>
+            </div>
+            <div class="level-card level-3" id="card-3">
+                <div class="level-range">9 - 12</div>
+                <div class="level-name">➖ Statut quo</div>
+            </div>
+            <div class="level-card level-4" id="card-4">
+                <div class="level-range">13 - 14</div>
+                <div class="level-name">💵 Prime personnel médical</div>
+            </div>
+            <div class="level-card level-5" id="card-5">
+                <div class="level-range">15 - 16</div>
+                <div class="level-name">💰 Prime tout le personnel</div>
+            </div>
+            <div class="level-card level-6" id="card-6">
+                <div class="level-range">17 - 18</div>
+                <div class="level-name">🛏️ Ouverture de lits</div>
+            </div>
+            <div class="level-card level-7" id="card-7">
+                <div class="level-range">19 - 20</div>
+                <div class="level-name">👥 Création de postes</div>
+            </div>
+            <div class="level-card level-8" id="card-8">
+                <div class="level-range">21 - 22</div>
+                <div class="level-name">⭐ Centre expert</div>
+            </div>
+            <div class="level-card level-9" id="card-9">
+                <div class="level-range">23 - 24</div>
+                <div class="level-name">🏆 Modèle national</div>
+            </div>
+            <div class="level-card level-10" id="card-10">
+                <div class="level-range">25 et +</div>
+                <div class="level-name">🏛️ Visite du Ministre de la santé</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let score = 0;
+
+        const levels = [
+            { max: 3, name: "Fermeture de l'unité", class: "badge-0", cardId: 0 },
+            { max: 6, name: "Mise sous surveillance", class: "badge-1", cardId: 1 },
+            { max: 8, name: "Vigilance", class: "badge-2", cardId: 2 },
+            { max: 12, name: "Statut quo", class: "badge-3", cardId: 3 },
+            { max: 14, name: "Prime personnel médical", class: "badge-4", cardId: 4 },
+            { max: 16, name: "Prime tout le personnel", class: "badge-5", cardId: 5 },
+            { max: 18, name: "Ouverture de lits", class: "badge-6", cardId: 6 },
+            { max: 20, name: "Création de postes", class: "badge-7", cardId: 7 },
+            { max: 22, name: "Centre expert", class: "badge-8", cardId: 8 },
+            { max: 24, name: "Modèle national", class: "badge-9", cardId: 9 },
+            { max: Infinity, name: "Visite du Ministre de la santé", class: "badge-10", cardId: 10 }
+        ];
+
+        function changeScore(delta) {
+            score += delta;
+            if (score < 0) score = 0;
+            updateDisplay();
+        }
+
+        function resetScore() {
+            score = 0;
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById('scoreDisplay').textContent = score;
+            
+            // Mise à jour du niveau
+            let currentLevel = levels[0];
+            for (let level of levels) {
+                if (score <= level.max) {
+                    currentLevel = level;
+                    break;
+                }
+            }
+
+            const badge = document.getElementById('levelBadge');
+            badge.textContent = currentLevel.name;
+            badge.className = 'level-badge ' + currentLevel.class;
+
+            // Mise à jour des cartes
+            document.querySelectorAll('.level-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            document.getElementById('card-' + currentLevel.cardId).classList.add('active');
+
+            // Mise à jour des points sur la piste
+            document.querySelectorAll('.score-dot').forEach(dot => {
+                dot.classList.remove('active');
+            });
+
+            // Activer le point le plus proche
+            const closestPoint = Math.round(score / 5) * 5;
+            if (closestPoint <= 25) {
+                const dotElement = document.getElementById('dot-' + closestPoint);
+                if (dotElement) {
+                    dotElement.classList.add('active');
+                }
+            }
+        }
+
+        // Initialisation
+        updateDisplay();
+    </script>
+</body>
+</html>
